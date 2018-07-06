@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hello World</title>
+     <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+     <script>
+       display = (data) => {
+        $("#table tbody").prepend('<tr><td>' + data + '</td></tr>');
+       }
+
+       wsfun = () => {
+        if (window['WebSocket']) {
+          console.log('WebSocket supported')
+
+          const wsConn = new WebSocket("ws://localhost:8080/wsevents");
+
+          wsConn.onopen = (evt) => {
+            console.log("WebSocket OPEN");
+
+            const param = { type:'register', args:{}}
+            wsConn.send(JSON.stringify(param))
+          }
+
+          wsConn.onerror = (evt) => {
+            console.error("WebSocket ERROR: " + evt.data);
+
+            display("WebSocket ERROR: "+  evt.data)
+          }
+
+          wsConn.onclose = (evt) => {
+            console.log("WebSocket CLOSE: " + evt.data);
+
+            display("WebSocket CLOSE: " + evt.data)
+          };
+
+          wsConn.onmessage = (evt) => {
+            console.log("WebSocket MESSAGE: " + evt.data);
+
+            display("WebSocket MESSAGE: " + evt.data)
+          }; 
+
+          this.wsConn = wsConn
+
+        }else {
+          console.log('WebSocket is not supported')
+        }
+       }  
+
+       $(document).ready(function(){
+         wsfun()
+       });
+     </script>
+</head>
+<body>
+  <table id="table">
+    <tbody>
+    </tbody>
+  </table>
+</body>
+</html>
