@@ -25,10 +25,9 @@ func main() {
 	log.Printf("server starts...")
 
 	//wsevent.InitWithPort("/wsevents", 8081)
-
 	wsevent.Init("/wsevents")
 
-	publishExampleEvents()
+	publishEvents()
 
 	http.HandleFunc("/", homePage)
 	log.Fatal(http.ListenAndServe(":8080", nil))
@@ -37,17 +36,16 @@ func main() {
 }
 
 type event struct {
-	Event string    `json:"event"`
-	From  int       `json:"from"`
-	Time  time.Time `json:"time"`
+	Event string `json:"event"`
+	From  int    `json:"from"`
 }
 
-func publishExampleEvents() {
+func publishEvents() {
 	for i := 0; i < 10; i++ {
 		index := i + 1
 		go func() {
 			for {
-				wsevent.PublishEvent(&event{Event: "test", From: index, Time: time.Now()})
+				wsevent.PublishEvent(&event{Event: "test", From: index})
 				time.Sleep(time.Second * 1)
 			}
 		}()

@@ -28,14 +28,16 @@ func main() {
 	args := wsevent.ConfigArgs{
 		EventQueueSize:       10240,
 		PublishRoutineNum:    8,
-		LogEvent:             false,
+		LogEventEnabled:      false,
+		RegisterTimeout:      5,
 		ValidateRegisterArgs: validateRegisterArgs,
 		FilterEvent:          filterEvent}
 	wsevent.Config(args)
 
 	wsevent.Init("/wsevents")
+	//wsevent.InitWithPort("/wsevents", 8081)
 
-	publishExampleEvents()
+	publishEvents()
 
 	http.HandleFunc("/", homePage)
 	log.Fatal(http.ListenAndServe(":8080", nil))
@@ -44,9 +46,8 @@ func main() {
 }
 
 type event struct {
-	Event string    `json:"event"`
-	From  int       `json:"from"`
-	Time  time.Time `json:"time"`
+	Event string `json:"event"`
+	From  int    `json:"from"`
 }
 
 type registerArgs struct {
@@ -58,13 +59,13 @@ func validateRegisterArgs(args interface{}) (typedArgs interface{}, err error) {
 	log.Printf("validateRegisterArgs: %+v", args)
 
 	if args == nil {
-		err = wsevent.NewError(wsevent.ErrorUnauthorized, "No register args")
+		err = wsevent.NewError(wsevent.ErrorUnregistered, "No register args")
 		return
 	}
 
 	body, e := json.Marshal(args)
 	if e != nil {
-		err = wsevent.NewError(wsevent.ErrorUnauthorized, "Invalid register args fromat")
+		err = wsevent.NewError(wsevent.ErrorUnregistered, "Invalid register args fromat")
 		return
 	}
 
@@ -72,18 +73,18 @@ func validateRegisterArgs(args interface{}) (typedArgs interface{}, err error) {
 
 	e = json.Unmarshal(body, &regArgs)
 	if e != nil {
-		err = wsevent.NewError(wsevent.ErrorUnauthorized, "Invalid register args format")
+		err = wsevent.NewError(wsevent.ErrorUnregistered, "Invalid register args format")
 		return
 	}
 
 	if len(regArgs.Token) == 0 {
-		err = wsevent.NewError(wsevent.ErrorUnauthorized, "Invalid register args: no token present")
+		err = wsevent.NewError("unauthorized", "Invalid register args: no token present")
 		return
 	}
 
 	// verify token in real project
 	if regArgs.Token != "123" {
-		err = wsevent.NewError(wsevent.ErrorUnauthorized, "Invalid register args: wrong token")
+		err = wsevent.NewError("unauthorized", "Invalid register args: wrong token")
 		return
 	}
 
@@ -132,12 +133,12 @@ func filterEvent(args interface{}, evt interface{}) bool {
 	return true
 }
 
-func publishExampleEvents() {
+func publishEvents() {
 	for i := 0; i < 10; i++ {
 		index := i + 1
 		go func() {
 			for {
-				wsevent.PublishEvent(&event{Event: "test", From: index, Time: time.Now()})
+				wsevent.PublishEvent(&event{Event: "test", From: index})
 				time.Sleep(time.Second * 1)
 			}
 		}()

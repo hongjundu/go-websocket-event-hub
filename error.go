@@ -2,7 +2,7 @@ package wsevent
 
 const (
 	ErrorCodeServerError  = "server_error"
-	ErrorUnauthorized     = "unauthorized"
+	ErrorUnregistered     = "unregistered"
 	ErrorCodeNotSupported = "not_supported"
 )
 

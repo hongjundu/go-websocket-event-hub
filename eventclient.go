@@ -45,14 +45,31 @@ type eventClient struct {
 	// The websocket connection.
 	conn *websocket.Conn
 
+	// connection time
+	connTime time.Time
+
 	// Buffered channel of outbound messages.
 	send chan []byte
 
-	// authorized
-	authorized bool
+	// registered
+	registered bool
 
 	// args that need to filter event
 	registerArgs interface{}
+}
+
+func newEventClient(conn *websocket.Conn) *eventClient {
+	client := &eventClient{hub: _eventhub, conn: conn, send: make(chan []byte, 512), registered: false, connTime: time.Now()}
+	client.hub.registerClient <- client
+
+	time.AfterFunc(time.Duration(_configArgs.RegisterTimeout)*time.Second, func() {
+		if !client.registered {
+			log.Printf("[wsevent] client %+v is not registered in %d seconds, disconnected it", client, _configArgs.RegisterTimeout)
+			client.conn.Close()
+		}
+	})
+
+	return client
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -62,7 +79,7 @@ type eventClient struct {
 // reads from this goroutine.
 func (c *eventClient) readPump() {
 	defer func() {
-		c.hub.unregister <- c
+		c.hub.unregisterClient <- c
 		c.conn.Close()
 	}()
 
@@ -92,14 +109,14 @@ func (c *eventClient) readPump() {
 		if err := json.Unmarshal(message, &param); err == nil {
 			log.Printf("[wsevent] received from client, param: %+v", param)
 
-			if param.Type == "register" {
+			if param.Type == "reg" {
 				if args, e := _configArgs.ValidateRegisterArgs(param.Args); e == nil {
 					c.registerArgs = args
-					respMsg = map[string]interface{}{"type": param.Type, "args": param.Args}
-					c.authorized = true
+					respMsg = newResponseMessage(param.Type, newOKResponseData("args", c.registerArgs))
+					c.registered = true
 				} else {
-					respErr = NewError(ErrorUnauthorized, e.Error())
-					c.authorized = false
+					respErr = NewError(ErrorUnregistered, e.Error())
+					c.registered = false
 				}
 
 			} else {
@@ -113,9 +130,9 @@ func (c *eventClient) readPump() {
 
 		var respBody []byte
 		if respErr != nil {
-			respBody, _ = json.Marshal(newErrorResponse(respErr))
+			respBody, _ = json.Marshal(newResponseMessage(param.Type, newErrorResponseData(respErr)))
 		} else {
-			respBody, _ = json.Marshal(newOKResponse(respMsg))
+			respBody, _ = json.Marshal(respMsg)
 		}
 
 		c.send <- respBody
@@ -180,8 +197,7 @@ func (h *wsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := &eventClient{hub: _eventhub, conn: conn, send: make(chan []byte, 512), authorized: false}
-	client.hub.register <- client
+	client := newEventClient(conn)
 
 	// Allow collection of memory referenced by the caller by doing all work in
 	// new goroutines.

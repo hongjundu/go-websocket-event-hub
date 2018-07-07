@@ -1,29 +1,42 @@
 package wsevent
 
+import "time"
+
 const (
-	ResponseStatusOK    = "ok"
-	ResponseStatusError = "error"
+	responseStatusKey    = "status"
+	responseErrorCodeKey = "code"
+	responseErrorMsgKey  = "msg"
 )
 
-type response struct {
-	Status string      `json:"status"`
-	Code   string      `json:"code,omitempty"`
-	Msg    string      `json:"msg,omitempty"`
-	Data   interface{} `json:"data,omitempty"`
+const (
+	responseStatusOK    = "ok"
+	responseStatusError = "err"
+)
+
+type responseMessage struct {
+	Type string      `json:"t"`
+	Data interface{} `json:"d"`
+	Time int64       `json:"time"`
 }
 
-func newOKResponse(data interface{}) *response {
-	return &response{Status: ResponseStatusOK, Data: data}
+type responseData map[string]interface{}
+
+func newOKResponseData(key string, data interface{}) responseData {
+	return responseData{responseStatusKey: responseStatusOK, key: data}
 }
 
-func newErrorResponse(err error) *response {
+func newErrorResponseData(err error) responseData {
 	if err == nil {
-		return newOKResponse(nil)
-	} else {
-		if theError, ok := err.(*Error); ok {
-			return &response{Status: ResponseStatusError, Code: theError.Code(), Msg: theError.Error(), Data: nil}
-		} else {
-			return &response{Status: ResponseStatusError, Code: ErrorCodeServerError, Msg: err.Error(), Data: nil}
-		}
+		return responseData{responseStatusKey: responseStatusOK}
 	}
+
+	if theError, ok := err.(*Error); ok {
+		return responseData{responseStatusKey: responseStatusError, responseErrorCodeKey: theError.Code(), responseErrorMsgKey: theError.Error()}
+	} else {
+		return responseData{responseStatusKey: responseStatusError, responseErrorCodeKey: ErrorCodeServerError, responseErrorMsgKey: err.Error()}
+	}
+}
+
+func newResponseMessage(t string, d interface{}) *responseMessage {
+	return &responseMessage{Type: t, Data: d, Time: time.Now().Unix()}
 }

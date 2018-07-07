@@ -8,6 +8,14 @@
         $("#table tbody").prepend('<tr><td>' + data + '</td></tr>');
        }
 
+       on_register = (data) => {
+          $("#table tbody").prepend('<tr><td>' + "Register: " + JSON.stringify(data) + '</td></tr>');
+       }
+
+       on_event = (data) => {
+          $("#table tbody").prepend('<tr><td>' + "Event: " + JSON.stringify(data) + '</td></tr>');
+       }
+
        wsfun = () => {
         if (window['WebSocket']) {
           console.log('WebSocket supported')
@@ -17,7 +25,7 @@
           wsConn.onopen = (evt) => {
             console.log("WebSocket OPEN");
 
-            const param = { type:'register', args:{token:'123',hint:'even'}}
+            const param = { type:'reg', args:{token:'123',hint:'odd'}}
             wsConn.send(JSON.stringify(param))
           }
 
@@ -36,7 +44,16 @@
           wsConn.onmessage = (evt) => {
             console.log("WebSocket MESSAGE: " + evt.data);
 
-            display("WebSocket MESSAGE: " + evt.data)
+            try {
+              const obj = JSON.parse(evt.data)
+              if (obj.t == 'reg') {
+                on_register(obj.d)
+              }else if (obj.t == "event") {
+                on_event(obj.d)
+              }
+            }catch(err) {
+              display("Parse message to JSON object error: " + err)
+            }
           }; 
 
           this.wsConn = wsConn

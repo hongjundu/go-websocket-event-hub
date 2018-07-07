@@ -14,20 +14,20 @@ type eventHub struct {
 	broadcastEvents chan interface{}
 
 	// Register requests from the clients.
-	register chan *eventClient
+	registerClient chan *eventClient
 
 	// Unregister requests from clients.
-	unregister chan *eventClient
+	unregisterClient chan *eventClient
 }
 
 var _eventhub *eventHub
 
 func newEventHub() *eventHub {
 	_eventhub = &eventHub{
-		broadcastEvents: make(chan interface{}, _configArgs.EventQueueSize),
-		register:        make(chan *eventClient),
-		unregister:      make(chan *eventClient),
-		clients:         make(map[*eventClient]bool),
+		broadcastEvents:  make(chan interface{}, _configArgs.EventQueueSize),
+		registerClient:   make(chan *eventClient),
+		unregisterClient: make(chan *eventClient),
+		clients:          make(map[*eventClient]bool),
 	}
 	return _eventhub
 }
@@ -36,18 +36,18 @@ func (h *eventHub) run() {
 	for i := 0; i < _configArgs.PublishRoutineNum; i++ {
 		go func() {
 			for event := range h.broadcastEvents {
-				if _configArgs.LogEvent {
+				if _configArgs.LogEventEnabled {
 					log.Printf("[wsevent] connectd: %d publish event: %+v ", len(h.clients), event)
 				}
 
 				for client := range h.clients {
-					if !client.authorized {
-						log.Printf("[wsevent] client is not authorized: %+v", client)
+					if !client.registered {
+						log.Printf("[wsevent] client is not registered: %+v", client)
 						continue
 					}
 
 					if _configArgs.FilterEvent(client.registerArgs, event) {
-						if message, err := json.Marshal(event); err == nil {
+						if message, err := json.Marshal(newResponseMessage("event", event)); err == nil {
 							select {
 							case client.send <- message:
 							default:
@@ -66,10 +66,10 @@ func (h *eventHub) run() {
 
 	for {
 		select {
-		case client := <-h.register:
+		case client := <-h.registerClient:
 			log.Printf("[wsevent] client open: %+v", client)
 			h.clients[client] = true
-		case client := <-h.unregister:
+		case client := <-h.unregisterClient:
 			log.Printf("[wsevent] client close: %+v", client)
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
@@ -80,7 +80,7 @@ func (h *eventHub) run() {
 
 }
 
-var _configArgs ConfigArgs = ConfigArgs{EventQueueSize: 1024, PublishRoutineNum: 4}
+var _configArgs ConfigArgs = ConfigArgs{EventQueueSize: 1024, PublishRoutineNum: 4, RegisterTimeout: 60}
 
 func init() {
 	_configArgs.ValidateRegisterArgs = func(args interface{}) (interface{}, error) {
