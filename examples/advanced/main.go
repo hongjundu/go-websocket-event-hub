@@ -101,7 +101,7 @@ func filterEvent(args interface{}, evt interface{}) bool {
 	}
 
 	if args == nil {
-		log.Printf("FilterEvent args is nil")
+		log.Printf("FilterEvent: args is nil")
 		return true
 	}
 
@@ -109,13 +109,13 @@ func filterEvent(args interface{}, evt interface{}) bool {
 	var ok bool
 
 	if typedArgs, ok = args.(*registerArgs); !ok {
-		log.Printf("FilterEvent invlid args type")
+		log.Printf("FilterEvent: invlid args type")
 		return false
 	}
 
 	var typedEvent *event
 	if typedEvent, ok = evt.(*event); !ok {
-		log.Printf("FilterEvent invlid event type")
+		log.Printf("FilterEvent: invlid event type")
 		return false
 	}
 
