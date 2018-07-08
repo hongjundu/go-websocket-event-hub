@@ -26,7 +26,7 @@ Table of contents
         
     ```Options``` argument
     
-    The default options ```wsevent.Options{}``` just works. If you want to customize for your needs, following optons are avaiable.
+    The default options ```wsevent.Options{}``` works for most cases. If you want to customize for your needs, following optons are avaiable.
     
     -  ```EventQueueSize int``` The size of the queue that holds the publishing events. Default value: ```1024```.
     -  ```PublishRoutineNum int``` The number of worker routines that publish events. Default value: ```4```.
