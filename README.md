@@ -1,6 +1,6 @@
 # websocket-event-hub
 
-Publish events via websocket
+Golang event push library. Makes web push notification easy via websocket. dependency: [github.com/gorilla/websocket](github.com/gorilla/websocket)
 
 ## Basic example
 
