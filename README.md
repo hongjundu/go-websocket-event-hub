@@ -21,11 +21,11 @@ Golang event push library. Makes web push notification easy via websocket. depen
     ```Options``` argument in Init function
     The default options ```wsevent.Options{}``` just works. If you want to customize for your needs, following optons are avaiable.
     
-* ```EventQueueSize int```
-* ```PublishRoutineNum int```
-* ```LogEventEnabled bool```
-* ```ValidateRegisterArgs func(args interface{}) (interface{}, error)```
-* ```FilterEvene func(args interface{}, event interface{}) bool```
+    - ```EventQueueSize int```
+    - ```PublishRoutineNum int```
+    - ```LogEventEnabled bool```
+    -  ```ValidateRegisterArgs func(args interface{}) (interface{}, error)```
+    -  ```FilterEvene func(args interface{}, event interface{}) bool```
     
 * Publish event to each registered web socket clients with following API
     
