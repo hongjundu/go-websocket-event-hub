@@ -1,6 +1,6 @@
 # golang websocket event hub
 
-Golang event push library. Makes web push notification easy via websocket. dependency: [github.com/gorilla/websocket](https://github.com/gorilla/websocket)
+Golang event push library. Makes web push notification easy via websocket. It depends on  [github.com/gorilla/websocket](https://github.com/gorilla/websocket)
 
 ## Public API
 
@@ -19,6 +19,7 @@ Golang event push library. Makes web push notification easy via websocket. depen
         wsevent.InitWithPort("/wsevents", 8081, wsevent.Options{}))
         
     ```Options``` argument in Init function
+    
     The default options ```wsevent.Options{}``` just works. If you want to customize for your needs, following optons are avaiable.
     
     - ```EventQueueSize int```
