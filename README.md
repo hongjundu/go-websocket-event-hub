@@ -3,13 +3,12 @@
 Golang event push library. Makes web push notification easy via websocket. It depends on  [github.com/gorilla/websocket](https://github.com/gorilla/websocket)
 
 Table of contents
-=================
+
   * [Public API](#public-api)
   * [Basic Example](#basic-example)
   * [Avanced Example](#advanced-example)
 
 ## Public API
-=================
 
 * Init event hub with one of the following APIs
 
@@ -41,7 +40,6 @@ Table of contents
         func PublishEvent(event interface{})
 
 ## Basic Example
-=================
 
     package main
 
@@ -99,7 +97,6 @@ Table of contents
 
 
 ## Advanced Example
-=================
 
     package main
 
