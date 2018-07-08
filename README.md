@@ -1,6 +1,35 @@
-# websocket-event-hub
+# go-websocket-event-hub
 
 Golang event push library. Makes web push notification easy via websocket. dependency: [github.com/gorilla/websocket](github.com/gorilla/websocket)
+
+## Public API
+
+* Init event hub with one of the following APIs
+
+        func Init(path string, options Options) 
+        func InitWithPort(path string, port int, options Options) 
+        
+    ```Init(path string, options Options) ``` initializes the event hub and listen on default http handler.
+           
+        wsevent.Init("/wsevents", wsevent.Options{})
+        log.Fatal(http.ListenAndServe(":8080", nil))
+            
+    ```InitWithPort(path string, port int, options Options) ```initializes the event hub and listen on a given port.
+        
+        wsevent.InitWithPort("/wsevents", 8081, wsevent.Options{}))
+        
+    ```Options``` argument in Init function
+    The default options ```wsevent.Options{}``` just works. If you want to customize for your needs, following optons are avaiable.
+    
+* ```EventQueueSize int```
+* ```PublishRoutineNum int```
+* ```LogEventEnabled bool```
+* ```ValidateRegisterArgs func(args interface{}) (interface{}, error)```
+* ```FilterEvene func(args interface{}, event interface{}) bool```
+    
+* Publish event to each registered web socket clients with following API
+    
+        func PublishEvent(event interface{})
 
 ## Basic example
 

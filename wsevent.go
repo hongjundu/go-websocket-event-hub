@@ -17,6 +17,20 @@ type Options struct {
 	FilterEvent          func(args interface{}, event interface{}) bool
 }
 
+func Init(path string, options Options) {
+	if _eventhub != nil {
+		log.Fatalf("[wsevent] already initialized")
+	}
+	setOptions(options)
+
+	go newEventHub().run()
+	handler := &wsHandler{path}
+
+	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		handler.ServeHTTP(w, r)
+	})
+}
+
 func InitWithPort(path string, port int, options Options) {
 	if _eventhub != nil {
 		log.Fatalf("[wsevent] already initialized")
@@ -30,20 +44,6 @@ func InitWithPort(path string, port int, options Options) {
 	go func() {
 		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), handler))
 	}()
-}
-
-func Init(path string, options Options) {
-	if _eventhub != nil {
-		log.Fatalf("[wsevent] already initialized")
-	}
-	setOptions(options)
-
-	go newEventHub().run()
-	handler := &wsHandler{path}
-
-	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		handler.ServeHTTP(w, r)
-	})
 }
 
 func PublishEvent(event interface{}) {
