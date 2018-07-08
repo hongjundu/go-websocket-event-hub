@@ -62,9 +62,9 @@ func newEventClient(conn *websocket.Conn) *eventClient {
 	client := &eventClient{hub: _eventhub, conn: conn, send: make(chan []byte, 512), registered: false, connTime: time.Now()}
 	client.hub.registerClient <- client
 
-	time.AfterFunc(time.Duration(_configArgs.RegisterTimeout)*time.Second, func() {
+	time.AfterFunc(time.Duration(_globalOptions.RegisterTimeout)*time.Second, func() {
 		if !client.registered {
-			log.Printf("[wsevent] client %+v is not registered in %d seconds, disconnected it", client, _configArgs.RegisterTimeout)
+			log.Printf("[wsevent] client %+v is not registered in %d seconds, disconnected it", client, _globalOptions.RegisterTimeout)
 			client.conn.Close()
 		}
 	})
@@ -110,7 +110,9 @@ func (c *eventClient) readPump() {
 			log.Printf("[wsevent] received from client, param: %+v", param)
 
 			if param.Type == "reg" {
-				if args, e := _configArgs.ValidateRegisterArgs(param.Args); e == nil {
+				if args, e := _globalOptions.ValidateRegisterArgs(param.Args); e == nil {
+					log.Printf("[wsevent] reg args: %+v", args)
+
 					c.registerArgs = args
 					respMsg = newResponseMessage(param.Type, newOKResponseData("args", c.registerArgs))
 					c.registered = true
@@ -125,8 +127,6 @@ func (c *eventClient) readPump() {
 		} else {
 			respErr = err
 		}
-
-		log.Printf("%+v", respErr)
 
 		var respBody []byte
 		if respErr != nil {

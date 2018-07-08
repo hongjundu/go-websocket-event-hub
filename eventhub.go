@@ -24,7 +24,7 @@ var _eventhub *eventHub
 
 func newEventHub() *eventHub {
 	_eventhub = &eventHub{
-		broadcastEvents:  make(chan interface{}, _configArgs.EventQueueSize),
+		broadcastEvents:  make(chan interface{}, _globalOptions.EventQueueSize),
 		registerClient:   make(chan *eventClient),
 		unregisterClient: make(chan *eventClient),
 		clients:          make(map[*eventClient]bool),
@@ -33,10 +33,10 @@ func newEventHub() *eventHub {
 }
 
 func (h *eventHub) run() {
-	for i := 0; i < _configArgs.PublishRoutineNum; i++ {
+	for i := 0; i < _globalOptions.PublishRoutineNum; i++ {
 		go func() {
 			for event := range h.broadcastEvents {
-				if _configArgs.LogEventEnabled {
+				if _globalOptions.LogEventEnabled {
 					log.Printf("[wsevent] connectd: %d publish event: %+v ", len(h.clients), event)
 				}
 
@@ -46,7 +46,7 @@ func (h *eventHub) run() {
 						continue
 					}
 
-					if _configArgs.FilterEvent(client.registerArgs, event) {
+					if _globalOptions.FilterEvent(client.registerArgs, event) {
 						if message, err := json.Marshal(newResponseMessage("event", event)); err == nil {
 							select {
 							case client.send <- message:
@@ -80,13 +80,37 @@ func (h *eventHub) run() {
 
 }
 
-var _configArgs ConfigArgs = ConfigArgs{EventQueueSize: 1024, PublishRoutineNum: 4, RegisterTimeout: 60}
+var _globalOptions Options = Options{EventQueueSize: 1024, PublishRoutineNum: 4, RegisterTimeout: 60}
+
+func setOptions(options Options) {
+	if options.EventQueueSize > 0 {
+		_globalOptions.EventQueueSize = options.EventQueueSize
+	}
+
+	if options.PublishRoutineNum > 0 {
+		_globalOptions.PublishRoutineNum = options.PublishRoutineNum
+	}
+
+	if options.RegisterTimeout > 0 {
+		_globalOptions.RegisterTimeout = options.RegisterTimeout
+	}
+
+	if options.ValidateRegisterArgs != nil {
+		_globalOptions.ValidateRegisterArgs = options.ValidateRegisterArgs
+	}
+
+	if options.FilterEvent != nil {
+		_globalOptions.FilterEvent = options.FilterEvent
+	}
+
+	_globalOptions.LogEventEnabled = options.LogEventEnabled
+}
 
 func init() {
-	_configArgs.ValidateRegisterArgs = func(args interface{}) (interface{}, error) {
+	_globalOptions.ValidateRegisterArgs = func(args interface{}) (interface{}, error) {
 		return nil, nil
 	}
-	_configArgs.FilterEvent = func(args interface{}, event interface{}) bool {
+	_globalOptions.FilterEvent = func(args interface{}, event interface{}) bool {
 		return true
 	}
 }

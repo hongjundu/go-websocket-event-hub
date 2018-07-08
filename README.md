@@ -30,8 +30,8 @@ Publish events via websocket
     func main() {
         log.Printf("server starts...")
 
-        //wsevent.InitWithPort("/wsevents", 8081)
-        wsevent.Init("/wsevents")
+        //wsevent.InitWithPort("/wsevents", 8081, wsevent.Options{}))
+        wsevent.Init("/wsevents", wsevent.Options{})
 
         publishEvents()
 
@@ -52,11 +52,12 @@ Publish events via websocket
             go func() {
                 for {
                     wsevent.PublishEvent(&event{Event: "test", From: index})
-                    time.Sleep(time.Second * 1)
+                    time.Sleep(time.Second * 5)
                 }
             }()
         }
     }
+
 
 ## Advanced example
 
@@ -87,17 +88,16 @@ Publish events via websocket
     func main() {
         log.Printf("server starts...")
 
-        args := wsevent.ConfigArgs{
+        options := wsevent.Options{
             EventQueueSize:       10240,
             PublishRoutineNum:    8,
             LogEventEnabled:      false,
             RegisterTimeout:      5,
             ValidateRegisterArgs: validateRegisterArgs,
             FilterEvent:          filterEvent}
-        wsevent.Config(args)
 
-        wsevent.Init("/wsevents")
-        //wsevent.InitWithPort("/wsevents", 8081)
+        wsevent.Init("/wsevents", options)
+        //wsevent.InitWithPort("/wsevents", 8081, options)
 
         publishEvents()
 
@@ -206,4 +206,3 @@ Publish events via websocket
             }()
         }
     }
-

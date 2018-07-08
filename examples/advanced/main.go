@@ -25,17 +25,16 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 func main() {
 	log.Printf("server starts...")
 
-	args := wsevent.ConfigArgs{
+	options := wsevent.Options{
 		EventQueueSize:       10240,
 		PublishRoutineNum:    8,
 		LogEventEnabled:      false,
 		RegisterTimeout:      5,
 		ValidateRegisterArgs: validateRegisterArgs,
 		FilterEvent:          filterEvent}
-	wsevent.Config(args)
 
-	wsevent.Init("/wsevents")
-	//wsevent.InitWithPort("/wsevents", 8081)
+	wsevent.Init("/wsevents", options)
+	//wsevent.InitWithPort("/wsevents", 8081, options)
 
 	publishEvents()
 

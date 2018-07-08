@@ -24,8 +24,8 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 func main() {
 	log.Printf("server starts...")
 
-	//wsevent.InitWithPort("/wsevents", 8081)
-	wsevent.Init("/wsevents")
+	//wsevent.InitWithPort("/wsevents", 8081, wsevent.Options{}))
+	wsevent.Init("/wsevents", wsevent.Options{})
 
 	publishEvents()
 
@@ -46,7 +46,7 @@ func publishEvents() {
 		go func() {
 			for {
 				wsevent.PublishEvent(&event{Event: "test", From: index})
-				time.Sleep(time.Second * 1)
+				time.Sleep(time.Second * 5)
 			}
 		}()
 	}

@@ -8,7 +8,7 @@ import (
 
 // public APIs
 
-type ConfigArgs struct {
+type Options struct {
 	EventQueueSize       int
 	PublishRoutineNum    int
 	LogEventEnabled      bool
@@ -17,42 +17,12 @@ type ConfigArgs struct {
 	FilterEvent          func(args interface{}, event interface{}) bool
 }
 
-func Config(args ConfigArgs) {
-	if args.EventQueueSize > 0 {
-		_configArgs.EventQueueSize = args.EventQueueSize
-	}
-
-	if args.PublishRoutineNum > 0 {
-		_configArgs.PublishRoutineNum = args.PublishRoutineNum
-	}
-
-	if args.RegisterTimeout > 0 {
-		_configArgs.RegisterTimeout = args.RegisterTimeout
-	}
-
-	if args.ValidateRegisterArgs != nil {
-		_configArgs.ValidateRegisterArgs = args.ValidateRegisterArgs
-	}
-
-	if args.FilterEvent != nil {
-		_configArgs.FilterEvent = args.FilterEvent
-	}
-
-	_configArgs.LogEventEnabled = args.LogEventEnabled
-}
-
-func PublishEvent(event interface{}) {
-	if _eventhub == nil {
-		log.Fatalf("[wsevent] not initialized")
-	}
-
-	_eventhub.broadcastEvents <- event
-}
-
-func InitWithPort(path string, port int) {
+func InitWithPort(path string, port int, options Options) {
 	if _eventhub != nil {
 		log.Fatalf("[wsevent] already initialized")
 	}
+
+	setOptions(options)
 
 	go newEventHub().run()
 	handler := &wsHandler{path}
@@ -62,10 +32,11 @@ func InitWithPort(path string, port int) {
 	}()
 }
 
-func Init(path string) {
+func Init(path string, options Options) {
 	if _eventhub != nil {
 		log.Fatalf("[wsevent] already initialized")
 	}
+	setOptions(options)
 
 	go newEventHub().run()
 	handler := &wsHandler{path}
@@ -73,4 +44,12 @@ func Init(path string) {
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		handler.ServeHTTP(w, r)
 	})
+}
+
+func PublishEvent(event interface{}) {
+	if _eventhub == nil {
+		log.Fatalf("[wsevent] was not initialized")
+	}
+
+	_eventhub.broadcastEvents <- event
 }
