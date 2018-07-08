@@ -2,7 +2,14 @@
 
 Golang event push library. Makes web push notification easy via websocket. It depends on  [github.com/gorilla/websocket](https://github.com/gorilla/websocket)
 
+Table of contents
+=================
+  * [Public API](#public-api)
+  * [Basic Example](#basic-example)
+  * [Avanced Example](#advanced-example)
+
 ## Public API
+=================
 
 * Init event hub with one of the following APIs
 
@@ -18,21 +25,23 @@ Golang event push library. Makes web push notification easy via websocket. It de
         
         wsevent.InitWithPort("/wsevents", 8081, wsevent.Options{}))
         
-    ```Options``` argument in Init function
+    ```Options``` argument
     
     The default options ```wsevent.Options{}``` just works. If you want to customize for your needs, following optons are avaiable.
     
-    - ```EventQueueSize int```
-    - ```PublishRoutineNum int```
-    - ```LogEventEnabled bool```
-    -  ```ValidateRegisterArgs func(args interface{}) (interface{}, error)```
-    -  ```FilterEvene func(args interface{}, event interface{}) bool```
+    -  ```EventQueueSize int``` The size of the queue that holds the publishing events. Default value: ```1024```.
+    -  ```PublishRoutineNum int``` The number of worker routines that publish events. Default value: ```4```.
+    -  ```LogEventEnabled bool``` Whether or not log events. Default value: ```false```.
+    -  ```ValidateRegisterArgs func(args interface{}) (interface{}, error)``` A web client must register to event hub before receiving events via ```wsConn.send(JSON.stringify({type:'reg', args:{}}))```. The default ```ValidateRegisterArgs``` returns success for any register arguments. But if you want to authorize a connected client, you should provide a customized ```ValidateRegisterArgs``` callback. See [advanced example](#advanced-example) for reference.
+    -  ```RegisterTimeout int``` If a web client connects to event hub but it is registered in ```RegisterTimeout``` seconds, event hub disconnect it to save server resources. Default value: ```60```.
+    -  ```FilterEvent func(args interface{}, event interface{}) bool``` By default event hub publish all events to each connected client. If you want to filter events to a given connected client, provide a customized ```FilterEvent``` callback. See [advanced example](#advanced-example) for reference.
     
 * Publish event to each registered web socket clients with following API
     
         func PublishEvent(event interface{})
 
-## Basic example
+## Basic Example
+=================
 
     package main
 
@@ -89,7 +98,8 @@ Golang event push library. Makes web push notification easy via websocket. It de
     }
 
 
-## Advanced example
+## Advanced Example
+=================
 
     package main
 
