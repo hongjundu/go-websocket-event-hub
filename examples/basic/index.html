@@ -30,19 +30,19 @@
           }
 
           wsConn.onerror = (evt) => {
-            console.error("WebSocket ERROR: " + evt.data);
+            console.error("WebSocket ERROR:", evt.data);
 
             display("WebSocket ERROR: "+  evt.data)
           }
 
           wsConn.onclose = (evt) => {
-            console.log("WebSocket CLOSE: " + evt.data);
+            console.log("WebSocket CLOSE:", evt.data);
 
             display("WebSocket CLOSE: " + evt.data)
           };
 
           wsConn.onmessage = (evt) => {
-            console.log("WebSocket MESSAGE: " + evt.data);
+            console.log("WebSocket MESSAGE:", evt.data);
 
             try {
               const obj = JSON.parse(evt.data)
@@ -52,7 +52,9 @@
                 on_event(obj.d)
               }
             }catch(err) {
-              display("Parse message to JSON object error: " + err)
+              console.error("Parse WS message error:", err)
+
+              display("ERROR: " + err)
             }
           }; 
 

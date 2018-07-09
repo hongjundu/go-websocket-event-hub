@@ -29,11 +29,16 @@ Table of contents
     The default options ```wsevent.Options{}``` just works. If you want to customize for your needs, following optons are avaiable.
     
     -  ```EventQueueSize int``` The size of the queue that holds the publishing events. Default value: ```1024```.
+
     -  ```PublishRoutineNum int``` The number of worker routines that publish events. Default value: ```4```.
+
     -  ```LogEventEnabled bool``` Whether or not log events. Default value: ```false```.
-    -  ```ValidateRegisterArgs func(args interface{}) (interface{}, error)``` A web client must register to event hub via ```wsConn.send(JSON.stringify({type:'reg', args:{}}))``` before receiving events . The default ```ValidateRegisterArgs``` returns success for any register arguments. But if you want to authorize a connected client, you should provide a customized ```ValidateRegisterArgs``` callback. See [advanced example](#advanced-example) for reference.
+
+    -  ```ValidateRegisterArgs func(args interface{}) (interface{}, error)``` A web client must register to event hub via ```wsConn.send(JSON.stringify({type:'reg', args:{}}))``` before receiving events . The default ```ValidateRegisterArgs``` returns success for any register arguments. But if you want to authorize a connected client, you should provide a customized ```ValidateRegisterArgs``` callback. Moreover, you may need to filter events before sending to client. ```ValidateRegisterArgs``` also prases filter arguments which are passed from a web client. See [advanced example](#advanced-example) for reference. 
+
     -  ```RegisterTimeout int``` If a web client connects to event hub but it is not registered in ```RegisterTimeout``` seconds, event hub disconnect it to save server resources. Default value: ```60``` seconds.
-    -  ```FilterEvent func(args interface{}, event interface{}) bool``` By default event hub publish all events to each connected client. If you want to filter events to a given connected client, provide a customized ```FilterEvent``` callback. See [advanced example](#advanced-example) for reference.
+    
+    -  ```FilterEvent func(args interface{}, event interface{}) bool``` By default event hub publish all events to each connected client. If you want to filter events to a given connected client, provide a customized ```FilterEvent``` callback. (The filter arguments should be parsed by ```ValidateRegisterArgs```) See [advanced example](#advanced-example) for reference.
     
 * Publish event to each registered web socket clients with following API
     
