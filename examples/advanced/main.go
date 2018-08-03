@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/du-hj/go-websocket-event-hub"
+	"github.com/hongjundu/go-websocket-event-hub"
 	"log"
 	"net/http"
 	"time"
