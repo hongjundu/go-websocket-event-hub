@@ -1,0 +1,21 @@
+FROM golang:latest 
+
+LABEL maintainer="Hongjun Du<hongjun.du.cn@gmail.com>"
+
+ENV GOPATH /go
+ENV PATH $PATH:$GOPATH/bin
+ENV CGO_ENABLED 0
+
+RUN mkdir -p /go/src/github.com/hongjundu/go-websocket-event-hub
+
+ADD . /go/src/github.com/hongjundu/go-websocket-event-hub
+COPY ./examples/advanced/index.html /go/bin/
+
+RUN cd /go && go get github.com/gorilla/websocket
+
+WORKDIR /go/bin
+RUN go build -o /go/bin/advanced github.com/hongjundu/go-websocket-event-hub/examples/advanced
+
+EXPOSE 8080
+
+CMD ["/go/bin/advanced"]
