@@ -20,7 +20,7 @@
         if (window['WebSocket']) {
           console.log('WebSocket supported')
 
-          const wsConn = new WebSocket("ws://10.10.10.87:8080/wsevents");
+          const wsConn = new WebSocket("ws://localhost:8080/wsevents");
 
           wsConn.onopen = (evt) => {
             console.log("WebSocket OPEN");
